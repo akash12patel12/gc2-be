@@ -2,3 +2,5 @@
 .env
 /node_modules
 a.txt
+
+README.md
