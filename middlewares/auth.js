@@ -1,3 +1,4 @@
+
 const jwt = require('jsonwebtoken');
 
 exports.authenticate=(req,res,next)=>{
@@ -11,3 +12,4 @@ exports.authenticate=(req,res,next)=>{
     req.user = user;
     next();
 }
+

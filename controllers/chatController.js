@@ -1,18 +1,29 @@
 const User = require("../models/user");
 const Message = require("../models/message")
 const { Op } = require("sequelize");
+const Group = require("../models/group")
 require("dotenv").config();
 
 exports.send = async (req,res) =>{
-    // console.log("controller working");
-    // console.log(req.body);
+
     const message = req.body.message
-   const sender  = await  User.findByPk(req.user.userId)
-   console.log(sender.id);
+    const groupId = req.body.groupId
+
+   const sender  = await  User.findOne({
+      where  : { id : req.user.userId },
+      include : [ {model : Group, where : { id : groupId}}]
+   });
+
+   if(!sender){
+    return  res.status(404).json( { error : "User Not Belongs To Group"})
+   }
+
+   // console.log(sender.id);
    Message.create({
        senderid : sender.id,
-       sender : sender.name,
-       message : message
+       sender : sender.username,
+       message : message,
+       GroupId : groupId
    }).then(data=>{
       res.status(200).json({success : true})
    }).catch(err=>{
@@ -23,7 +34,10 @@ exports.send = async (req,res) =>{
 
 
 exports.getall = async (req,res) =>{
-   Message.findAll().then(msgs=>{
+   let groupId = req.body.groupId;
+   Message.findAll({
+      where : { GroupId : groupId} 
+   }).then(msgs=>{
     res.status(200).json(msgs)
    }).catch(err=>{
     res.status(400).json({error : err})
@@ -31,7 +45,6 @@ exports.getall = async (req,res) =>{
 }
 
 exports.getLatestTenMessages = async (req,res) => {
-   console.log('Called Controller');
    let LatestMessageId;
    await Message.findOne({
       order: [ [ 'id', 'DESC' ]],
@@ -43,6 +56,7 @@ exports.getLatestTenMessages = async (req,res) => {
          id : {
             [Op.gt] : LatestMessageId - 10 
          }
+         
       }
    }).then(LatestTenMsgs=>{
       res.json(LatestTenMsgs)
@@ -62,4 +76,13 @@ exports.getLatestMessages = async (req, res) =>{
    }).then(LatestMsgs=>{
       res.json(LatestMsgs);
    })
+}
+
+
+exports.getAllMessagesOfGroup =async (req, res) =>{
+   const groupId  = req.body.groupId;
+   const messages = await Message.findAll({
+      where: { groupId },
+    });
+    return res.status(200).json({ messages });
 }
