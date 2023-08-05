@@ -18,8 +18,7 @@ const Group = sequelize.define('Group', {
     createdByUserId : {
         type : Sequelize.INTEGER,
         allowNull : false,
-    }
-
+    },
 });
 
 module.exports = Group;

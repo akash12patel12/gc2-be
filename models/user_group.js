@@ -7,11 +7,21 @@ const userGroup = sequelize.define("User_group", {
     type: Sequelize.INTEGER,
     default: 1,
     autoIncrement: true,
-    // allowNull: false,
     primaryKey: true,
    },
-//   },
- 
+   isAdmin : {
+      type :Sequelize.BOOLEAN ,
+      default : false
+   },
+   username : {
+       type : Sequelize.STRING,
+       allowNull : false ,
+
+   },
+   groupName : {
+      type : Sequelize.STRING,
+      allowNull : false ,
+   }
 });
 
 module.exports = userGroup;

@@ -1,12 +1,29 @@
 const User = require("../models/user");
 const Message = require("../models/message");
 const Group = require("../models/group");
+
 const userGroup = require("../models/user_group");
 const Invitation = require("../models/invitation");
+
+
 require("dotenv").config();
 
 exports.sendInvite = async (req, res) => {
   try {
+    // check if invite is sent by An Admin
+    const invitersId = req.user.userId;
+    const inviter = await userGroup.findOne({
+      where : {
+        UserId : invitersId ,
+        GroupId : req.body.groupId
+      }
+    })
+   
+    if(!inviter.isAdmin){
+      return res.status(401).json({ error: "Only Admins Can Invite!" });
+
+    }
+
     const { username, groupId } = req.body;
     // Check if the group exists
     const group = await Group.findOne({
@@ -28,12 +45,20 @@ exports.sendInvite = async (req, res) => {
     userId = user.id;
     // Check if the invitation already exists
     const existingInvitation = await Invitation.findOne({
-      where: { groupId, userId },
+      where: { groupId, userId , status : 'pending' },
     });
-
+   
     if (existingInvitation) {
       return res.status(400).json({ error: "Invitation already sent." });
     }
+    // Checking if User is already a member of group
+    const userExistInGroup = await userGroup.findOne({
+     where : {UserId : userId , GroupId : groupId}
+    })
+    if (userExistInGroup) {
+      return res.status(400).json({ error: "User already a member." });
+    }
+
 
     // Create the invitation
     await Invitation.create({
@@ -63,7 +88,7 @@ exports.seeGroupInvites = async (req, res) => {
 exports.acceptInvite = async (req, res) => {
   try {
     //find invite , user id , group id
-    console.log(req.body);
+    // console.log(req.body);
     const id = req.body.id;
 
     //if invite found
@@ -106,6 +131,9 @@ exports.acceptInvite = async (req, res) => {
     await userGroup.create({
       GroupId: groupId,
       UserId: userId,
+      isAdmin : false,
+      username : user.username,
+      groupName : group.name
     });
     // send success response
     return res
@@ -129,3 +157,4 @@ exports.rejectInvite = async (req, res) => {
   return res.status(200).json({message : 'Invitation Rejected!'})
 
 };
+

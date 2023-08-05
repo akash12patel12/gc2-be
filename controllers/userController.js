@@ -1,6 +1,8 @@
 const User = require("../models/user");
+const Group = require("../models/group")
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const userGroup = require("../models/user_group")
 require("dotenv").config();
 
 exports.register = (req, res) => {
@@ -46,6 +48,24 @@ exports.login = (req, res) => {
     }
   });
 };
+
+exports.getLoggedInUser = (req,res)=> {
+  User.findByPk(req.user.userId).then(user=>{
+    return res.status(200).json({User : user.username})
+  }).catch(err=>{
+    console.log(err);
+  })
+}
+
+exports.seeGroupUsers = async (req,res)=>{
+  const groupId = req.body.groupId;
+  const users = await userGroup.findAll({
+    where : { groupId : groupId}
+  })
+  if(users.length !== 0){
+    res.json(users)
+  }
+}
 
 function generateToken(id) {
   return jwt.sign({ userId: id }, process.env.BCRYPT_SECRET);

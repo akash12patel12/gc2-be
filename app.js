@@ -25,6 +25,11 @@ app.use(inviteRoutes);
 
 User.belongsToMany(Group, {through : 'User_group'});
 Group.belongsToMany(User, {through : 'User_group'});
+
+
+
+
+
 Message.belongsTo(Group);
 
 

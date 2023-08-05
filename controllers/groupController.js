@@ -2,7 +2,6 @@ const User = require("../models/user");
 const Message = require("../models/message");
 const Group = require("../models/group");
 const userGroup = require("../models/user_group");
-
 require("dotenv").config();
 
 exports.createGroup = (req, res) => {
@@ -11,19 +10,21 @@ exports.createGroup = (req, res) => {
     name: req.body.groupName,
     createdByUserId: uid,
   })
-    .then((response) => {
+    .then(async (response) => {
       let uuid = uid;
+
       let gid = response.dataValues.id;
-      //   console.log(gid);
-      //   console.log(uid);
+      const {username}  = await User.findByPk(uid);
       userGroup
         .create({
-          // id : true,
+          username : username,
+          groupName : req.body.groupName,
           UserId: uuid,
           GroupId: gid,
+          isAdmin : true
         })
         .then((data) => {
-          console.log(data);
+           
         })
         .catch((err) => {
           console.log(err);
@@ -63,5 +64,5 @@ exports.getActiveGroup = (req, res) =>{
 
 }
 
-exports.inviteUser = (req,res) =>{
-}
+
+
